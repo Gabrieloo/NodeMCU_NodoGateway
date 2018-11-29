@@ -42,12 +42,12 @@ void informarNodoGateway() {
 void receivedCallback( uint32_t from, String &msg ) {
   //Serial.printf("startHere: Received from %u msg=%s\n", from, msg.c_str());
 
-	String comandoADormir = "TodosLosNodosADormir";
+
 
   Serial.printf("%u/%s\n", from, msg.c_str()); // debug
 
-	Serial.printf("%u/%s\n", from, msg.substring(0,5).c_str());
-	Serial.printf("%u/%s\n", from, msg.substring(5).c_str());
+	Serial.printf("%u/%s\n", from, msg.substring(0,5).c_str());	// debug
+	Serial.printf("%u/%s\n", from, msg.substring(5).c_str());	// debug
 
 /*/////
 	for(int k=0; k<=1 ; k++){
@@ -56,7 +56,10 @@ void receivedCallback( uint32_t from, String &msg ) {
 	Serial.printf("%s\n", sDatosSensorHumedadConcatenados.c_str());
 	///////*/
 	if(msg.substring(0,5) == "Dato_"){
+
+		Serial.printf("Dato_%u/%s\n", from, msg.c_str()); //Serial a Node-Red
 		String sDatoSensorHumedadSensor = msg.substring(5);
+
 		for(int i=0; i<=2 ; i++){
 
 	    Serial.printf("1er for %u/%s\n", from, msg.c_str());// debug
@@ -78,9 +81,10 @@ void receivedCallback( uint32_t from, String &msg ) {
 	        }
 
 	        if(j == 2){//todos los datos fueron recibidos
+
 						Serial.printf("todos obtenidos (j==2) %u/%s\n", from, msg.c_str());// debug
 
-						for(int k=0; k<=2 ; k++){
+						/*for(int k=0; k<=2 ; k++){	// Par enviar todos los datos concatenados una vez recibidos de todos los nodos
 
 							Serial.printf("4to for %u/%s\n", from, msg.c_str());// debug
 							sDatosSensorHumedadConcatenados += nodos[k].sDatoSensorHumedad + ";";
@@ -88,6 +92,7 @@ void receivedCallback( uint32_t from, String &msg ) {
 
 						//Enviar array de datos por serial, tomarlos en Node-RED por relación PosiciónArray-Nodo preestablecido
 						Serial.printf("%s\n", sDatosSensorHumedadConcatenados.c_str());
+						*/
 
 						//Reset de estado de datos recibidos
 						nodos[0].bDatoActualObtenido = false;
@@ -97,8 +102,10 @@ void receivedCallback( uint32_t from, String &msg ) {
 						sDatosSensorHumedadConcatenados = "";
 
 						//Mandar a dormir a todos los nodos de la red
+						String comandoADormir = "TodosLosNodosADormir";
 						mesh.sendBroadcast(comandoADormir);
 	        }
+
 	      }
 
 	    }
