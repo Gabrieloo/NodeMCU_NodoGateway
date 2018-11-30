@@ -44,10 +44,10 @@ void receivedCallback( uint32_t from, String &msg ) {
 
 
 
-  Serial.printf("%u/%s\n", from, msg.c_str()); // debug
+  //Serial.printf("%u/%s\n", from, msg.c_str()); // debug
 
-	Serial.printf("%u/%s\n", from, msg.substring(0,5).c_str());	// debug
-	Serial.printf("%u/%s\n", from, msg.substring(5).c_str());	// debug
+	//Serial.printf("%u/%s\n", from, msg.substring(0,5).c_str());	// debug
+	//Serial.printf("%u/%s\n", from, msg.substring(5).c_str());	// debug
 
 /*/////
 	for(int k=0; k<=1 ; k++){
@@ -57,16 +57,17 @@ void receivedCallback( uint32_t from, String &msg ) {
 	///////*/
 	if(msg.substring(0,5) == "Dato_"){
 
-		Serial.printf("Dato_%u/%s\n", from, msg.c_str()); //Serial a Node-Red
+		//string data = msg.substring(5).c_str(); //quitando Dato_
+		Serial.printf("Dato_%u/%s\n", from, msg.substring(5).c_str()); //Serial a Node-Red
 		String sDatoSensorHumedadSensor = msg.substring(5);
 
 		for(int i=0; i<=2 ; i++){
 
-	    Serial.printf("1er for %u/%s\n", from, msg.c_str());// debug
+	    //Serial.printf("1er for %u/%s\n", from, msg.c_str());// debug
 
 	    if(from == nodos[i].nID){
 
-	      Serial.printf("2do for %u/%s\n", from, msg.c_str());// debug
+	      //Serial.printf("2do for %u/%s\n", from, msg.c_str());// debug
 
 	      nodos[i].sDatoSensorHumedad = sDatoSensorHumedadSensor;
 	      nodos[i].bDatoActualObtenido = true;
@@ -75,14 +76,14 @@ void receivedCallback( uint32_t from, String &msg ) {
 
 	      for(int j=0; j<=2 ; j++){
 
-					Serial.printf("3er for %u/%s\n", from, msg.c_str());// debug
+					//Serial.printf("3er for %u/%s\n", from, msg.c_str());// debug
 	        if(nodos[j].bDatoActualObtenido == false){
 	          break;
 	        }
 
 	        if(j == 2){//todos los datos fueron recibidos
 
-						Serial.printf("todos obtenidos (j==2) %u/%s\n", from, msg.c_str());// debug
+						//Serial.printf("todos obtenidos (j==2) %u/%s\n", from, msg.c_str());// debug
 
 						/*for(int k=0; k<=2 ; k++){	// Par enviar todos los datos concatenados una vez recibidos de todos los nodos
 
