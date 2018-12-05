@@ -58,7 +58,7 @@ void receivedCallback( uint32_t from, String &msg ) {
 	if(msg.substring(0,5) == "Dato_"){
 
 		//string data = msg.substring(5).c_str(); //quitando Dato_
-		Serial.printf("Dato_%u/%s\n", from, msg.substring(5).c_str()); //Serial a Node-Red
+
 		String sDatoSensorHumedadSensor = msg.substring(5);
 
 		for(int i=0; i<=2 ; i++){
@@ -70,7 +70,13 @@ void receivedCallback( uint32_t from, String &msg ) {
 	      //Serial.printf("2do for %u/%s\n", from, msg.c_str());// debug
 
 	      nodos[i].sDatoSensorHumedad = sDatoSensorHumedadSensor;
-	      nodos[i].bDatoActualObtenido = true;
+
+				if(nodos[i].bDatoActualObtenido == false){
+						Serial.printf("Dato_%u/%s\n", from, msg.substring(5).c_str()); //Serial a Node-Red
+						nodos[i].bDatoActualObtenido = true;
+						break;
+				}
+
 	      String recibido = "recibido";
 	      mesh.sendSingle(from, recibido);
 
