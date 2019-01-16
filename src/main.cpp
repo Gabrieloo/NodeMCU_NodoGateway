@@ -25,11 +25,16 @@ struct Nodo{
 	bool bDatoActualObtenido;
 } nodos[3];
 
+bool bEsperarProximoCiclo;
 
 // User stub
 void informarNodoGateway() ; // Prototype so PlatformIO doesn't complain
+void enviarTodosLosNodosADormir();
+void EsperarProximoCiclo();
 
 Task taskInformarNodoGateway(TASK_SECOND * 1, TASK_FOREVER, &informarNodoGateway, &userScheduler, true);
+Task taskEnviarComandoTodosLosNodosADormir(TASK_SECOND * 1, TASK_FOREVER, &enviarTodosLosNodosADormir, &userScheduler, false);
+Task taskEsperarProximoCiclo(TASK_MINUTE * 1, TASK_ONCE, &EsperarProximoCiclo, &userScheduler, false);
 
 void informarNodoGateway() {
 
@@ -38,11 +43,31 @@ void informarNodoGateway() {
 
 }
 
+void enviarTodosLosNodosADormir(){
+
+	String comandoADormir = "TodosLosNodosADormir";
+	mesh.sendBroadcast(comandoADormir);
+	Serial.printf("TodosLosNodosADormir");
+
+}
+
+void EsperarProximoCiclo(){
+	bEsperarProximoCiclo = false;
+	taskEnviarComandoTodosLosNodosADormir.disable();
+
+	//String msg = "soyNodoGateway";
+  //mesh.sendBroadcast( msg );//
+
+}
+
 // Needed for painless library
 void receivedCallback( uint32_t from, String &msg ) {
-  //Serial.printf("startHere: Received from %u msg=%s\n", from, msg.c_str());
 
 
+	Serial.printf("MENSAJE: from %u msg=%s\n", from, msg.c_str());
+
+	String recibido = "recibido";
+	mesh.sendSingle(from, recibido);
 
   //Serial.printf("%u/%s\n", from, msg.c_str()); // debug
 
@@ -55,9 +80,7 @@ void receivedCallback( uint32_t from, String &msg ) {
 	}
 	Serial.printf("%s\n", sDatosSensorHumedadConcatenados.c_str());
 	///////*/
-	if(msg.substring(0,5) == "Dato_"){
-
-		//string data = msg.substring(5).c_str(); //quitando Dato_
+	if(msg.substring(0,5) == "Dato_" && bEsperarProximoCiclo == false){
 
 		String sDatoSensorHumedadSensor = msg.substring(5);
 
@@ -74,11 +97,11 @@ void receivedCallback( uint32_t from, String &msg ) {
 				if(nodos[i].bDatoActualObtenido == false){
 						Serial.printf("Dato_%u/%s\n", from, msg.substring(5).c_str()); //Serial a Node-Red
 						nodos[i].bDatoActualObtenido = true;
+				}else{
 						break;
 				}
 
-	      String recibido = "recibido";
-	      mesh.sendSingle(from, recibido);
+
 
 	      for(int j=0; j<=2 ; j++){
 
@@ -109,8 +132,11 @@ void receivedCallback( uint32_t from, String &msg ) {
 						sDatosSensorHumedadConcatenados = "";
 
 						//Mandar a dormir a todos los nodos de la red
-						String comandoADormir = "TodosLosNodosADormir";
-						mesh.sendBroadcast(comandoADormir);
+						taskEnviarComandoTodosLosNodosADormir.enable();
+
+						//Esperar al próximo ciclo para recibir datos (15 min default, 1 min para test)
+						bEsperarProximoCiclo = true;
+						taskEsperarProximoCiclo.restartDelayed();
 	        }
 
 	      }
@@ -143,6 +169,7 @@ void setup() {
   nodos[2] = {2485386851,"-1",false};
 
 	sDatosSensorHumedadConcatenados = "";
+	bEsperarProximoCiclo = false;
 
   Serial.begin(115200);
 
@@ -163,6 +190,5 @@ void loop() {
   userScheduler.execute(); // it will run mesh scheduler as well
   mesh.update();
 }
-//3er commit
-//4to commit
-//5to commit
+
+// v0.0.3 2018/01/16 taskEsperarProximoCiclo
